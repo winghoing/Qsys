@@ -462,9 +462,42 @@ namespace QscQsys
                                 }
 
                                 if (onNewCoreStatus != null)
+                                {
                                     onNewCoreStatus(designName, Convert.ToUInt16(isRedundant), Convert.ToUInt16(isEmulator));
-                            }
+                                }
+                                
+                                //When crestron processor receive a qsc processor state is "Active", log in again if qsc have login password, otherwise init again directly.
+                                if (engineStatus["State"] != null)
+                                {
+                                    if (engineStatus["State"].ToString() == "Active" && IsConnected)
+                                    {
+                                        if (!isLoggedIn)
+                                        {
+                                            CrestronConsole.PrintLine("Test Point 2");
+                                            if (debug == 1 || debug == 2)
+                                                ErrorLog.Notice("QsysProcessor server ready, starting to send intialization strings.");
 
+                                            if (password.Length > 0 && username.Length > 0)
+                                            {
+                                                logonAttempts = 1;
+                                                commandQueue.Enqueue(JsonConvert.SerializeObject(new Logon() { Params = new LogonParams() { User = username, Password = password } }));
+                                            }
+                                            else
+                                            {
+                                                isLoggedIn = true;
+
+                                                if (onIsLoggedIn != null)
+                                                {
+                                                    onIsLoggedIn(1);
+                                                }
+
+                                                waitForConnection = new CTimer(Init, 5000);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            /*
                             if (!isLoggedIn)
                             {
                                 if (debug == 1 || debug == 2)
@@ -487,6 +520,7 @@ namespace QscQsys
                                     waitForConnection = new CTimer(Init, 5000);
                                 }
                             }
+                            */
                         }
                         else if (returnString.Contains("error"))
                         {
