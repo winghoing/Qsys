@@ -20,6 +20,11 @@ push Trigger
     booleanControl.SetBoolean(1);
 }
 
+release Trigger
+{
+   booleanControl.SetBoolean(0);
+}
+
 function Main()
 {
     booleanControl.Initialize(CoreID, NamedControlName, 0);
